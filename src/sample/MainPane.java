@@ -44,6 +44,7 @@ This method lays out the top hbox, which has the following:
 
     Label labelProjectRoot = new Label("Project root");
     TextField tfProjectRoot = new TextField(INITIAL_DIRECTORY);
+    tfProjectRoot.setId("tfProjectRoot");
     Button btnProjectRoot = new Button("Browse...");
 
          File initialDirectory = new File (INITIAL_DIRECTORY);
@@ -52,6 +53,9 @@ This method lays out the top hbox, which has the following:
          directoryChooser.setInitialDirectory(initialDirectory);
 
 
+        /*
+        Add event handler to open directory chooser dialog when clicking the project root button.
+         */
          btnProjectRoot.setOnAction(
                  new EventHandler<ActionEvent>() {
                      @Override
@@ -59,11 +63,21 @@ This method lays out the top hbox, which has the following:
                          File file = directoryChooser.showDialog(primaryStage);
                          if (file != null) {
                              tfProjectRoot.setText(file.getPath());
+
                          }
                      }
                  });
 
          Button btnStart = new Button("Start");
+         btnStart.setOnAction(
+                 new EventHandler<ActionEvent>() {
+                     @Override
+                     public void handle(final ActionEvent e) {
+                         TextField textField =  (TextField) primaryStage.getScene().lookup("#tfProjectRoot");
+                         OrphanedImages.getAllImageFiles(textField.getText());
+                     }
+                 });
+
 
     HBox hboxProjectRoot = new HBox();
     hboxProjectRoot.getChildren().addAll(labelProjectRoot,tfProjectRoot,btnProjectRoot,btnStart);
