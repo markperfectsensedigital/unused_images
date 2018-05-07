@@ -39,6 +39,11 @@ This method lays out the top hbox, which has a lable, text field, and button to 
     return hboxProjectRoot;
     }
 
+/*
+This method lays out the second hbox, which has 1) a
+table listing the unused graphics files and 2) a preview of the currently
+selected file.
+ */
 
     private static HBox makeHboxUnusedFiles() {
 
@@ -82,6 +87,10 @@ This method lays out the top hbox, which has a lable, text field, and button to 
         return hboxUnusedFiles;
     }
 
+
+    /*
+    This method lays out the third hbox, which has a button that deletes the selected files.
+     */
     private static HBox makeHboxDeleteFiles() {
 
         HBox hboxButtons = new HBox();
@@ -90,6 +99,9 @@ This method lays out the top hbox, which has a lable, text field, and button to 
     }
 
 
+    /*
+    This method lays out the bottom hbox, which is a status bar.
+     */
     private static VBox makeVboxStatus() {
 
         VBox vboxStatus = new VBox(10);
