@@ -2,6 +2,8 @@ package sample;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -10,15 +12,19 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import javafx.stage.DirectoryChooser;
+import javafx.stage.Stage;
+
+import java.io.File;
 
 public class MainPane {
 
-
-    public static Pane makeMainPane() {
+    private static final String INITIAL_DIRECTORY=System.getProperty("user.home") + "/Documents/docs";
+    public static Pane makeMainPane(Stage primaryStage) {
         Pane root = new Pane();
         VBox vboxRoot = new VBox(50);
         vboxRoot.setAlignment(Pos.CENTER);
-        vboxRoot.getChildren().addAll(makeHboxProject(),
+        vboxRoot.getChildren().addAll(makeHboxProject(primaryStage),
                 makeHboxUnusedFiles(),
                 makeHboxDeleteFiles(),
                 makeVboxStatus());
@@ -26,16 +32,41 @@ public class MainPane {
         return root;
     }
 
-     private static HBox makeHboxProject() {
+     private static HBox makeHboxProject(Stage primaryStage) {
 /*
-This method lays out the top hbox, which has a lable, text field, and button to open a file picker.
+This method lays out the top hbox, which has the following:
+
+1) A label
+2) A text field
+3) A button to open a directory picker
+4) A button to start the search routine
  */
 
     Label labelProjectRoot = new Label("Project root");
-    TextField tfProjectRoot = new TextField("~/Documents/docs/");
+    TextField tfProjectRoot = new TextField(INITIAL_DIRECTORY);
     Button btnProjectRoot = new Button("Browse...");
+
+         File initialDirectory = new File (INITIAL_DIRECTORY);
+         final DirectoryChooser directoryChooser = new DirectoryChooser();
+         directoryChooser.setTitle("Sphinx Project Directory");
+         directoryChooser.setInitialDirectory(initialDirectory);
+
+
+         btnProjectRoot.setOnAction(
+                 new EventHandler<ActionEvent>() {
+                     @Override
+                     public void handle(final ActionEvent e) {
+                         File file = directoryChooser.showDialog(primaryStage);
+                         if (file != null) {
+                             tfProjectRoot.setText(file.getPath());
+                         }
+                     }
+                 });
+
+         Button btnStart = new Button("Start");
+
     HBox hboxProjectRoot = new HBox();
-    hboxProjectRoot.getChildren().addAll(labelProjectRoot,tfProjectRoot,btnProjectRoot);
+    hboxProjectRoot.getChildren().addAll(labelProjectRoot,tfProjectRoot,btnProjectRoot,btnStart);
     return hboxProjectRoot;
     }
 
