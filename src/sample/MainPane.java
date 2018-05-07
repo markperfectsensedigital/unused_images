@@ -75,6 +75,7 @@ This method lays out the top hbox, which has the following:
                      public void handle(final ActionEvent e) {
                          TextField textField =  (TextField) primaryStage.getScene().lookup("#tfProjectRoot");
                          OrphanedImages.getAllImageFiles(textField.getText());
+                         String entireDocumentationText = OrphanedImages.loadAllTextIntoSingleString(textField.getText());
                      }
                  });
 
