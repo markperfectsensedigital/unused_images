@@ -29,8 +29,8 @@ public class OrphanedImages {
         try {
             for (File file : fList) {
                 if (isGraphic(file)) {
-                    System.out.println(file.getCanonicalPath());
-                    //   resultList.add()
+                   // System.out.println(file.getCanonicalPath());
+                       resultList.add(file.getCanonicalPath());
                 } else if (file.isDirectory()) {
                     resultList.addAll(getLocalImageFiles(file.getCanonicalPath()));
                 }
@@ -52,7 +52,6 @@ A graphic file is one that ends with svg, png, jpg, or jpeg
             return false;
         }
         Pattern p = Pattern.compile("\\.svg$|\\.png$|\\.jpg$|\\.jpeg$");
-
         Matcher m = p.matcher(file.getName());
         return m.find();
     }

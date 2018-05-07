@@ -16,10 +16,15 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MainPane {
 
-    private static final String INITIAL_DIRECTORY=System.getProperty("user.home") + "/Documents/docs";
+    private static final String INITIAL_DIRECTORY = System.getProperty("user.home") + "/Documents/docs";
+    private static ObservableList<DeleteCandidate> deleteCandidates = FXCollections.observableArrayList();
+
     public static Pane makeMainPane(Stage primaryStage) {
         Pane root = new Pane();
         VBox vboxRoot = new VBox(50);
@@ -32,7 +37,7 @@ public class MainPane {
         return root;
     }
 
-     private static HBox makeHboxProject(Stage primaryStage) {
+    private static HBox makeHboxProject(Stage primaryStage) {
 /*
 This method lays out the top hbox, which has the following:
 
@@ -42,47 +47,61 @@ This method lays out the top hbox, which has the following:
 4) A button to start the search routine
  */
 
-    Label labelProjectRoot = new Label("Project root");
-    TextField tfProjectRoot = new TextField(INITIAL_DIRECTORY);
-    tfProjectRoot.setId("tfProjectRoot");
-    Button btnProjectRoot = new Button("Browse...");
+        Label labelProjectRoot = new Label("Project root");
+        TextField tfProjectRoot = new TextField(INITIAL_DIRECTORY);
+        tfProjectRoot.setId("tfProjectRoot");
+        Button btnProjectRoot = new Button("Browse...");
 
-         File initialDirectory = new File (INITIAL_DIRECTORY);
-         final DirectoryChooser directoryChooser = new DirectoryChooser();
-         directoryChooser.setTitle("Sphinx Project Directory");
-         directoryChooser.setInitialDirectory(initialDirectory);
+        File initialDirectory = new File(INITIAL_DIRECTORY);
+        final DirectoryChooser directoryChooser = new DirectoryChooser();
+        directoryChooser.setTitle("Sphinx Project Directory");
+        directoryChooser.setInitialDirectory(initialDirectory);
 
 
         /*
         Add event handler to open directory chooser dialog when clicking the project root button.
          */
-         btnProjectRoot.setOnAction(
-                 new EventHandler<ActionEvent>() {
-                     @Override
-                     public void handle(final ActionEvent e) {
-                         File file = directoryChooser.showDialog(primaryStage);
-                         if (file != null) {
-                             tfProjectRoot.setText(file.getPath());
+        btnProjectRoot.setOnAction(
+                new EventHandler<ActionEvent>() {
+                    @Override
+                    public void handle(final ActionEvent e) {
+                        File file = directoryChooser.showDialog(primaryStage);
+                        if (file != null) {
+                            tfProjectRoot.setText(file.getPath());
 
-                         }
-                     }
-                 });
+                        }
+                    }
+                });
 
-         Button btnStart = new Button("Start");
-         btnStart.setOnAction(
-                 new EventHandler<ActionEvent>() {
-                     @Override
-                     public void handle(final ActionEvent e) {
-                         TextField textField =  (TextField) primaryStage.getScene().lookup("#tfProjectRoot");
-                         OrphanedImages.getAllImageFiles(textField.getText());
-                         String entireDocumentationText = OrphanedImages.loadAllTextIntoSingleString(textField.getText());
-                     }
-                 });
+        Button btnStart = new Button("Start");
+        btnStart.setOnAction(
+                new EventHandler<ActionEvent>() {
+                    @Override
+                    public void handle(final ActionEvent e) {
+                        TextField textField = (TextField) primaryStage.getScene().lookup("#tfProjectRoot");
+                        List<String> allImagesOnDisk = OrphanedImages.getAllImageFiles(textField.getText());
+                        String entireDocumentationText = OrphanedImages.loadAllTextIntoSingleString(textField.getText());
+                        allImagesOnDisk.forEach((fullFileName) -> {
+                            File localImageFile = new File(fullFileName);
+                            String filename = localImageFile.getName();
+                            Pattern p = Pattern.compile(filename);
+                            Matcher m = p.matcher(entireDocumentationText);
+                            if (!m.find()) {
+                                System.out.println(localImageFile.getAbsolutePath());
+                                File localDeleteCandidate = new File(localImageFile.getAbsolutePath());
+                                deleteCandidates.add(new DeleteCandidate(false,localImageFile.getAbsolutePath(),localDeleteCandidate.length()));
 
 
-    HBox hboxProjectRoot = new HBox();
-    hboxProjectRoot.getChildren().addAll(labelProjectRoot,tfProjectRoot,btnProjectRoot,btnStart);
-    return hboxProjectRoot;
+                            }
+
+                        });
+
+                    }
+                });
+
+        HBox hboxProjectRoot = new HBox();
+        hboxProjectRoot.getChildren().addAll(labelProjectRoot, tfProjectRoot, btnProjectRoot, btnStart);
+        return hboxProjectRoot;
     }
 
 /*
@@ -100,24 +119,17 @@ selected file.
         TableColumn colSize = new TableColumn("Size");
         TableView tableUnusedFiles = new TableView();
 
-
-        final ObservableList<DeleteCandidate> deleteCandidates = FXCollections.observableArrayList(
-                new DeleteCandidate(true,"/tmp/barf",500),
-                new DeleteCandidate(true,"/tmp/barf",500),
-                new DeleteCandidate(true,"/tmp/barf",500)
-        );
-
         colDelete.setCellValueFactory(
-                new PropertyValueFactory<DeleteCandidate,Boolean>("deleteFlag")
+                new PropertyValueFactory<DeleteCandidate, Boolean>("deleteFlag")
         );
         colFilename.setCellValueFactory(
-                new PropertyValueFactory<DeleteCandidate,String>("fileName")
+                new PropertyValueFactory<DeleteCandidate, String>("fileName")
         );
         colSize.setCellValueFactory(
-                new PropertyValueFactory<DeleteCandidate,Integer>("fileSize")
+                new PropertyValueFactory<DeleteCandidate, Integer>("fileSize")
         );
 
-        tableUnusedFiles.getColumns().addAll(colDelete,colFilename,colSize);
+        tableUnusedFiles.getColumns().addAll(colDelete, colFilename, colSize);
 
         tableUnusedFiles.setItems(deleteCandidates);
 
@@ -133,7 +145,6 @@ selected file.
         return hboxUnusedFiles;
     }
 
-
     /*
     This method lays out the third hbox, which has a button that deletes the selected files.
      */
@@ -143,7 +154,6 @@ selected file.
         hboxButtons.getChildren().add(new Button("Delete"));
         return hboxButtons;
     }
-
 
     /*
     This method lays out the bottom hbox, which is a status bar.

@@ -1,19 +1,19 @@
 package sample;
 
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleLongProperty;
 import javafx.beans.property.SimpleStringProperty;
 
 public class DeleteCandidate {
 
     private SimpleBooleanProperty deleteFlag;
     private SimpleStringProperty fileName;
-    private SimpleIntegerProperty fileSize;
+    private SimpleLongProperty fileSize;
 
-    public DeleteCandidate(Boolean deleteFlag, String fileName, Integer fileSize) {
+    public DeleteCandidate(Boolean deleteFlag, String fileName, Long fileSize) {
         this.deleteFlag = new SimpleBooleanProperty(deleteFlag);
         this.fileName = new SimpleStringProperty(fileName);
-        this.fileSize = new SimpleIntegerProperty(fileSize);
+        this.fileSize = new SimpleLongProperty(fileSize);
     }
 
     public Boolean getDeleteFlag() {
@@ -24,7 +24,7 @@ public class DeleteCandidate {
         return fileName.get();
     }
 
-    public Integer getFileSize() {
+    public Long getFileSize() {
         return fileSize.get();
     }
 }
