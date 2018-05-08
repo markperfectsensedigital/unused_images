@@ -56,25 +56,6 @@ A graphic file is one that ends with svg, png, jpg, or jpeg
         return m.find();
     }
 
-    public static List<DeleteCandidate> listf(String projectRootDirectory) {
-        File directory = new File(projectRootDirectory);
-
-        List<DeleteCandidate> resultList = new ArrayList<>();
-
-        // get all the files from a directory
-        File[] fList = directory.listFiles();
-        for (File file : fList) {
-            if (file.isFile()) {
-                System.out.println(file.getAbsolutePath());
-            } else if (file.isDirectory()) {
-                resultList.addAll(listf(file.getAbsolutePath()));
-            }
-        }
-        //System.out.println(fList);
-        return resultList;
-    }
-
-
 
     protected static String loadAllTextIntoSingleString(String projectRootDirectory) {
         String localString = new String();
@@ -82,7 +63,7 @@ A graphic file is one that ends with svg, png, jpg, or jpeg
         for (String localDirectory : TOP_LEVEL_DIRECTORIES) {
             localString = localString.concat(getLocalTextFiles(projectRootDirectory + localDirectory));
         }
-        System.out.println(localString);
+     //   System.out.println(localString);
         return localString;
     }
 
@@ -95,7 +76,7 @@ A graphic file is one that ends with svg, png, jpg, or jpeg
         try {
             for (File file : fList) {
                 if (isRst(file)) {
-                    System.out.println(file.getCanonicalPath());
+           //         System.out.println(file.getCanonicalPath());
 
                     localString = localString.concat (new String(Files.readAllBytes(Paths.get(file.getCanonicalPath()))));
                 } else if (file.isDirectory()) {
@@ -121,16 +102,5 @@ A text file is one that ends with txt or tsr
         return m.find();
     }
 
-
-    private String getFileContents(String path) {
-        String contents = null;
-        try {
-            contents = new String(Files.readAllBytes(Paths.get(path)));
-            System.out.println(contents);
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
-        }
-        return contents;
-    }
 }
 

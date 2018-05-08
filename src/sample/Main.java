@@ -11,7 +11,7 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws Exception{
         primaryStage.setTitle("Unused Images");
         Pane root = MainPane.makeMainPane(primaryStage);
-        primaryStage.setScene(new Scene(root, 500, 400));
+        primaryStage.setScene(new Scene(root, 500, 600));
         primaryStage.show();
 
     }

@@ -1,11 +1,16 @@
 package sample;
 
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.control.TableColumn.CellDataFeatures;
+import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -14,6 +19,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 
 import java.io.File;
 import java.util.List;
@@ -27,7 +33,7 @@ public class MainPane {
 
     public static Pane makeMainPane(Stage primaryStage) {
         Pane root = new Pane();
-        VBox vboxRoot = new VBox(50);
+        VBox vboxRoot = new VBox(20);
         vboxRoot.setAlignment(Pos.CENTER);
         vboxRoot.getChildren().addAll(makeHboxProject(primaryStage),
                 makeHboxUnusedFiles(),
@@ -76,21 +82,38 @@ This method lays out the top hbox, which has the following:
         Button btnStart = new Button("Start");
         btnStart.setOnAction(
                 new EventHandler<ActionEvent>() {
+                    /*
+                    The following event handler occurs when clicking the start button.
+                     */
                     @Override
                     public void handle(final ActionEvent e) {
+                        /*
+                        Retrieve the value of the selected project root.
+                         */
                         TextField textField = (TextField) primaryStage.getScene().lookup("#tfProjectRoot");
+                        /*
+                        Feed into a List all of the project's image files.
+                         */
                         List<String> allImagesOnDisk = OrphanedImages.getAllImageFiles(textField.getText());
+                        /*
+                        Feed into a single string all of the project's text files.
+                         */
                         String entireDocumentationText = OrphanedImages.loadAllTextIntoSingleString(textField.getText());
+                        /*
+                        For each of the found image files in the List, use pattern matching to see if the
+                        file appears inside the large string. If not, then the image is unused and add it
+                        to the list of delete candidates.
+                         */
+
                         allImagesOnDisk.forEach((fullFileName) -> {
                             File localImageFile = new File(fullFileName);
                             String filename = localImageFile.getName();
                             Pattern p = Pattern.compile(filename);
                             Matcher m = p.matcher(entireDocumentationText);
                             if (!m.find()) {
-                                System.out.println(localImageFile.getAbsolutePath());
+                                //    System.out.println(localImageFile.getAbsolutePath());
                                 File localDeleteCandidate = new File(localImageFile.getAbsolutePath());
-                                deleteCandidates.add(new DeleteCandidate(false,localImageFile.getAbsolutePath(),localDeleteCandidate.length()));
-
+                                deleteCandidates.add(new DeleteCandidate(false, localImageFile.getAbsolutePath(), localDeleteCandidate.length()));
 
                             }
 
@@ -112,19 +135,43 @@ selected file.
 
     private static HBox makeHboxUnusedFiles() {
 
-        CheckBox checkBoxDeleteAll = new CheckBox();
-
         TableColumn colDelete = new TableColumn("Delete");
         TableColumn colFilename = new TableColumn("Filename");
         TableColumn colSize = new TableColumn("Size");
         TableView tableUnusedFiles = new TableView();
 
-        colDelete.setCellValueFactory(
-                new PropertyValueFactory<DeleteCandidate, Boolean>("deleteFlag")
-        );
+
+                colDelete.setCellValueFactory(new Callback<CellDataFeatures<DeleteCandidate, Boolean>, ObservableValue<Boolean>>() {
+
+                    @Override
+                    public ObservableValue<Boolean> call(CellDataFeatures<DeleteCandidate, Boolean> param) {
+                        DeleteCandidate deleteCandidate = param.getValue();
+
+                        SimpleBooleanProperty booleanProp = new SimpleBooleanProperty(deleteCandidate.isDeleteFlag());
+
+                        booleanProp.addListener(new ChangeListener<Boolean>() {
+
+                            @Override
+                            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue,
+                                                Boolean newValue) {
+                                deleteCandidate.setDeleteFlag(newValue);
+                            }
+                        });
+                        return booleanProp;
+                    }
+                });
+
+
+        colDelete.setCellFactory(CheckBoxTableCell.forTableColumn(colDelete));
+
+    /*    colDelete.setOnEditCommit(
+                event -> System.out.println(event.)
+        ); */
+
         colFilename.setCellValueFactory(
                 new PropertyValueFactory<DeleteCandidate, String>("fileName")
         );
+
         colSize.setCellValueFactory(
                 new PropertyValueFactory<DeleteCandidate, Integer>("fileSize")
         );

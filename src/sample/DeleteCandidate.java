@@ -16,7 +16,7 @@ public class DeleteCandidate {
         this.fileSize = new SimpleLongProperty(fileSize);
     }
 
-    public Boolean getDeleteFlag() {
+    public Boolean isDeleteFlag() {
         return deleteFlag.get();
     }
 
@@ -26,5 +26,17 @@ public class DeleteCandidate {
 
     public Long getFileSize() {
         return fileSize.get();
+    }
+
+    public void setDeleteFlag(boolean deleteFlag) {
+        this.deleteFlag.set(deleteFlag);
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName.set(fileName);
+    }
+
+    public void setFileSize(long fileSize) {
+        this.fileSize.set(fileSize);
     }
 }
