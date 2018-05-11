@@ -1,12 +1,16 @@
 package sample;
 
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleLongProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.ObservableList;
+
+import java.util.Map;
 
 public class DeleteCandidate {
 
-    private SimpleBooleanProperty deleteFlag;
+    private BooleanProperty deleteFlag;
     private SimpleStringProperty fileName;
     private SimpleLongProperty fileSize;
 
@@ -39,4 +43,6 @@ public class DeleteCandidate {
     public void setFileSize(long fileSize) {
         this.fileSize.set(fileSize);
     }
+
+
 }

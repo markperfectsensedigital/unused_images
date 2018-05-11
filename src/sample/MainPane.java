@@ -12,6 +12,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
@@ -30,6 +31,7 @@ public class MainPane {
 
     private static final String INITIAL_DIRECTORY = System.getProperty("user.home") + "/Documents/docs";
     private static ObservableList<DeleteCandidate> deleteCandidates = FXCollections.observableArrayList();
+    private static SelectionStatus selectionStatus = new SelectionStatus();
 
     public static Pane makeMainPane(Stage primaryStage) {
         Pane root = new Pane();
@@ -119,6 +121,13 @@ This method lays out the top hbox, which has the following:
 
                         });
 
+                        deleteCandidates.forEach(deleteCandidate -> {
+                            selectionStatus.setNumberFilesFound( selectionStatus.getNumberFilesFound() + 1 );
+                            selectionStatus.setSizeFileFound( selectionStatus.getSizeFileFound() + deleteCandidate.getFileSize() );
+
+                        });
+                        SelectionStatus.updateStatusLabel(primaryStage,selectionStatus);
+
                     }
                 });
 
@@ -136,41 +145,40 @@ selected file.
     private static HBox makeHboxUnusedFiles() {
 
         TableColumn colDelete = new TableColumn("Delete");
-        TableColumn colFilename = new TableColumn("Filename");
+        TableColumn<DeleteCandidate,String> colFilename = new TableColumn("Filename");
         TableColumn colSize = new TableColumn("Size");
         TableView tableUnusedFiles = new TableView();
 
+        colDelete.setCellValueFactory(new Callback<CellDataFeatures<DeleteCandidate, Boolean>, ObservableValue<Boolean>>() {
 
-                colDelete.setCellValueFactory(new Callback<CellDataFeatures<DeleteCandidate, Boolean>, ObservableValue<Boolean>>() {
+            @Override
+            public ObservableValue<Boolean> call(CellDataFeatures<DeleteCandidate, Boolean> param) {
+                DeleteCandidate deleteCandidate = param.getValue();
+
+                SimpleBooleanProperty booleanProp = new SimpleBooleanProperty(deleteCandidate.isDeleteFlag());
+
+                booleanProp.addListener(new ChangeListener<Boolean>() {
 
                     @Override
-                    public ObservableValue<Boolean> call(CellDataFeatures<DeleteCandidate, Boolean> param) {
-                        DeleteCandidate deleteCandidate = param.getValue();
-
-                        SimpleBooleanProperty booleanProp = new SimpleBooleanProperty(deleteCandidate.isDeleteFlag());
-
-                        booleanProp.addListener(new ChangeListener<Boolean>() {
-
-                            @Override
-                            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue,
-                                                Boolean newValue) {
-                                deleteCandidate.setDeleteFlag(newValue);
-                            }
-                        });
-                        return booleanProp;
+                    public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue,
+                                        Boolean newValue) {
+                        deleteCandidate.setDeleteFlag(newValue);
+                        System.out.println("Changed the value");
                     }
                 });
+                return booleanProp;
+            }
+        });
 
+        colDelete.setCellFactory(param -> new CheckBoxTableCell<>());
 
-        colDelete.setCellFactory(CheckBoxTableCell.forTableColumn(colDelete));
-
-    /*    colDelete.setOnEditCommit(
-                event -> System.out.println(event.)
-        ); */
 
         colFilename.setCellValueFactory(
                 new PropertyValueFactory<DeleteCandidate, String>("fileName")
         );
+
+
+
 
         colSize.setCellValueFactory(
                 new PropertyValueFactory<DeleteCandidate, Integer>("fileSize")
@@ -179,6 +187,7 @@ selected file.
         tableUnusedFiles.getColumns().addAll(colDelete, colFilename, colSize);
 
         tableUnusedFiles.setItems(deleteCandidates);
+        tableUnusedFiles.setEditable(true);
 
         ImageView imagePreview = new ImageView();
         Image image = new Image("file:///Users/mlautman/Desktop/fall-by-the-lake-14767797082J2.jpg");
@@ -209,6 +218,7 @@ selected file.
 
         VBox vboxStatus = new VBox(10);
         Label statusLabel = new Label("Selected 0 of 100 files, 0 of 100 kb");
+        statusLabel.setId("statusLabel");
         vboxStatus.getChildren().add(statusLabel);
         return vboxStatus;
     }
