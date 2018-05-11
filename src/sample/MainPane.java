@@ -22,6 +22,11 @@ import javafx.stage.Stage;
 import javafx.util.Callback;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -226,7 +231,27 @@ selected file.
     private static HBox makeHboxDeleteFiles() {
 
         HBox hboxButtons = new HBox();
-        hboxButtons.getChildren().add(new Button("Delete"));
+
+        Button btnDelete = new Button("Delete");
+        btnDelete.setOnAction(
+                new EventHandler<ActionEvent>() {
+                    @Override
+                    public void handle(final ActionEvent e) {
+                      deleteCandidates.forEach(deleteCandidate -> {
+                          if (deleteCandidate.isDeleteFlag()) {
+
+                          try {
+                              Files.deleteIfExists(Paths.get(deleteCandidate.getFileName()));
+                          } catch (IOException x) {
+                              System.out.println("Could not delete file " + deleteCandidate.getFileName());
+
+                          }
+                      }});
+                    }
+                });
+
+
+        hboxButtons.getChildren().add(btnDelete);
         return hboxButtons;
     }
 
