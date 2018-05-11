@@ -38,7 +38,7 @@ public class MainPane {
         VBox vboxRoot = new VBox(20);
         vboxRoot.setAlignment(Pos.CENTER);
         vboxRoot.getChildren().addAll(makeHboxProject(primaryStage),
-                makeHboxUnusedFiles(),
+                makeHboxUnusedFiles(primaryStage),
                 makeHboxDeleteFiles(),
                 makeVboxStatus());
         root.getChildren().addAll(vboxRoot);
@@ -142,7 +142,7 @@ table listing the unused graphics files and 2) a preview of the currently
 selected file.
  */
 
-    private static HBox makeHboxUnusedFiles() {
+    private static HBox makeHboxUnusedFiles(Stage primaryStage) {
 
         TableColumn colDelete = new TableColumn("Delete");
         TableColumn<DeleteCandidate,String> colFilename = new TableColumn("Filename");
@@ -163,12 +163,22 @@ selected file.
                     public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue,
                                         Boolean newValue) {
                         deleteCandidate.setDeleteFlag(newValue);
-                        System.out.println("Changed the value");
+
+                        if (newValue) { /*If turn the check box ON so that we want to delete the file */
+                            selectionStatus.setNumberFilesSelected(selectionStatus.getNumberFilesSelected() + 1 );
+                            selectionStatus.setSizeFilesSelected( selectionStatus.getSizeFilesSelected() + deleteCandidate.getFileSize() );
+
+                        } else {/*If turn the check box OFF so that we want to retain the file */
+                            selectionStatus.setNumberFilesSelected(selectionStatus.getNumberFilesSelected() - 1 );
+                            selectionStatus.setSizeFilesSelected( selectionStatus.getSizeFilesSelected() - deleteCandidate.getFileSize() );
+                        }
+                        SelectionStatus.updateStatusLabel(primaryStage,  selectionStatus);
                     }
                 });
                 return booleanProp;
             }
         });
+
 
         colDelete.setCellFactory(param -> new CheckBoxTableCell<>());
 
