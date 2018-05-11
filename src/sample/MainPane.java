@@ -12,7 +12,6 @@ import javafx.scene.control.*;
 import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
@@ -32,6 +31,7 @@ public class MainPane {
     private static final String INITIAL_DIRECTORY = System.getProperty("user.home") + "/Documents/docs";
     private static ObservableList<DeleteCandidate> deleteCandidates = FXCollections.observableArrayList();
     private static SelectionStatus selectionStatus = new SelectionStatus();
+    private static ImageView imagePreview =  new ImageView();
 
     public static Pane makeMainPane(Stage primaryStage) {
         Pane root = new Pane();
@@ -179,15 +179,11 @@ selected file.
             }
         });
 
-
         colDelete.setCellFactory(param -> new CheckBoxTableCell<>());
-
 
         colFilename.setCellValueFactory(
                 new PropertyValueFactory<DeleteCandidate, String>("fileName")
         );
-
-
 
 
         colSize.setCellValueFactory(
@@ -199,7 +195,20 @@ selected file.
         tableUnusedFiles.setItems(deleteCandidates);
         tableUnusedFiles.setEditable(true);
 
-        ImageView imagePreview = new ImageView();
+        tableUnusedFiles.getSelectionModel().selectedItemProperty().addListener(
+                new ChangeListener<DeleteCandidate>() {
+                    @Override
+                    public void changed(ObservableValue<? extends DeleteCandidate> observable, DeleteCandidate oldValue, DeleteCandidate newValue) {
+                        System.out.println("You selected filename " + newValue.getFileName());
+
+                        Image image = new Image("file://" + newValue.getFileName());
+                        imagePreview.setImage(image);
+
+                    }
+                }
+
+        );
+
         Image image = new Image("file:///Users/mlautman/Desktop/fall-by-the-lake-14767797082J2.jpg");
         imagePreview.setImage(image);
         imagePreview.setPreserveRatio(true);
@@ -227,7 +236,7 @@ selected file.
     private static VBox makeVboxStatus() {
 
         VBox vboxStatus = new VBox(10);
-        Label statusLabel = new Label("Selected 0 of 100 files, 0 of 100 kb");
+        Label statusLabel = new Label("Select the root directory and click Start.");
         statusLabel.setId("statusLabel");
         vboxStatus.getChildren().add(statusLabel);
         return vboxStatus;
