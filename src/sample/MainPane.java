@@ -24,8 +24,6 @@ import javafx.util.Callback;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -36,7 +34,7 @@ public class MainPane {
     private static final String INITIAL_DIRECTORY = System.getProperty("user.home") + "/Documents/docs";
     private static ObservableList<DeleteCandidate> deleteCandidates = FXCollections.observableArrayList();
     private static SelectionStatus selectionStatus = new SelectionStatus();
-    private static ImageView imagePreview =  new ImageView();
+    private static ImageView imagePreview = new ImageView();
 
     public static Pane makeMainPane(Stage primaryStage) {
         Pane root = new Pane();
@@ -98,40 +96,47 @@ This method lays out the top hbox, which has the following:
                         Retrieve the value of the selected project root.
                          */
                         TextField textField = (TextField) primaryStage.getScene().lookup("#tfProjectRoot");
-                        /*
-                        Feed into a List all of the project's image files.
-                         */
-                        List<String> allImagesOnDisk = OrphanedImages.getAllImageFiles(textField.getText());
+
+                        /* Check if the value in textField is a project's root directory. */
+                        if (Utilities.isRootDirectory(textField.getText())) {
+                            /*   Feed into a List all of the project's image files.
+                             */
+                            List<String> allImagesOnDisk = OrphanedImages.getAllImageFiles(textField.getText());
                         /*
                         Feed into a single string all of the project's text files.
                          */
-                        String entireDocumentationText = OrphanedImages.loadAllTextIntoSingleString(textField.getText());
+                            String entireDocumentationText = OrphanedImages.loadAllTextIntoSingleString(textField.getText());
                         /*
                         For each of the found image files in the List, use pattern matching to see if the
                         file appears inside the large string. If not, then the image is unused and add it
                         to the list of delete candidates.
                          */
 
-                        allImagesOnDisk.forEach((fullFileName) -> {
-                            File localImageFile = new File(fullFileName);
-                            String filename = localImageFile.getName();
-                            Pattern p = Pattern.compile(filename);
-                            Matcher m = p.matcher(entireDocumentationText);
-                            if (!m.find()) {
-                                //    System.out.println(localImageFile.getAbsolutePath());
-                                File localDeleteCandidate = new File(localImageFile.getAbsolutePath());
-                                deleteCandidates.add(new DeleteCandidate(false, localImageFile.getAbsolutePath(), localDeleteCandidate.length()));
+                            allImagesOnDisk.forEach((fullFileName) -> {
+                                File localImageFile = new File(fullFileName);
+                                String filename = localImageFile.getName();
+                                Pattern p = Pattern.compile(filename);
+                                Matcher m = p.matcher(entireDocumentationText);
+                                if (!m.find()) {
+                                    //    System.out.println(localImageFile.getAbsolutePath());
+                                    File localDeleteCandidate = new File(localImageFile.getAbsolutePath());
+                                    deleteCandidates.add(new DeleteCandidate(false, localImageFile.getAbsolutePath(), localDeleteCandidate.length()));
 
-                            }
+                                }
 
-                        });
+                            });
 
-                        deleteCandidates.forEach(deleteCandidate -> {
-                            selectionStatus.setNumberFilesFound( selectionStatus.getNumberFilesFound() + 1 );
-                            selectionStatus.setSizeFileFound( selectionStatus.getSizeFileFound() + deleteCandidate.getFileSize() );
+                            deleteCandidates.forEach(deleteCandidate -> {
+                                selectionStatus.setNumberFilesFound(selectionStatus.getNumberFilesFound() + 1);
+                                selectionStatus.setSizeFileFound(selectionStatus.getSizeFileFound() + deleteCandidate.getFileSize());
 
-                        });
-                        SelectionStatus.updateStatusLabel(primaryStage,selectionStatus);
+                            });
+                            SelectionStatus.updateStatusLabel(primaryStage, selectionStatus);
+                        } else {
+
+                            Utilities.updateStatusLabel(primaryStage, "The directory you selected is not a project root. Try again.");
+
+                        }
 
                     }
                 });
@@ -150,7 +155,7 @@ selected file.
     private static HBox makeHboxUnusedFiles(Stage primaryStage) {
 
         TableColumn colDelete = new TableColumn("Delete");
-        TableColumn<DeleteCandidate,String> colFilename = new TableColumn("Filename");
+        TableColumn<DeleteCandidate, String> colFilename = new TableColumn("Filename");
         TableColumn colSize = new TableColumn("Size");
         TableView tableUnusedFiles = new TableView();
 
@@ -170,14 +175,14 @@ selected file.
                         deleteCandidate.setDeleteFlag(newValue);
 
                         if (newValue) { /*If turn the check box ON so that we want to delete the file */
-                            selectionStatus.setNumberFilesSelected(selectionStatus.getNumberFilesSelected() + 1 );
-                            selectionStatus.setSizeFilesSelected( selectionStatus.getSizeFilesSelected() + deleteCandidate.getFileSize() );
+                            selectionStatus.setNumberFilesSelected(selectionStatus.getNumberFilesSelected() + 1);
+                            selectionStatus.setSizeFilesSelected(selectionStatus.getSizeFilesSelected() + deleteCandidate.getFileSize());
 
                         } else {/*If turn the check box OFF so that we want to retain the file */
-                            selectionStatus.setNumberFilesSelected(selectionStatus.getNumberFilesSelected() - 1 );
-                            selectionStatus.setSizeFilesSelected( selectionStatus.getSizeFilesSelected() - deleteCandidate.getFileSize() );
+                            selectionStatus.setNumberFilesSelected(selectionStatus.getNumberFilesSelected() - 1);
+                            selectionStatus.setSizeFilesSelected(selectionStatus.getSizeFilesSelected() - deleteCandidate.getFileSize());
                         }
-                        SelectionStatus.updateStatusLabel(primaryStage,  selectionStatus);
+                        SelectionStatus.updateStatusLabel(primaryStage, selectionStatus);
                     }
                 });
                 return booleanProp;
@@ -189,7 +194,6 @@ selected file.
         colFilename.setCellValueFactory(
                 new PropertyValueFactory<DeleteCandidate, String>("fileName")
         );
-
 
         colSize.setCellValueFactory(
                 new PropertyValueFactory<DeleteCandidate, Integer>("fileSize")
@@ -237,19 +241,19 @@ selected file.
                 new EventHandler<ActionEvent>() {
                     @Override
                     public void handle(final ActionEvent e) {
-                      deleteCandidates.forEach(deleteCandidate -> {
-                          if (deleteCandidate.isDeleteFlag()) {
+                        deleteCandidates.forEach(deleteCandidate -> {
+                            if (deleteCandidate.isDeleteFlag()) {
 
-                          try {
-                              Files.deleteIfExists(Paths.get(deleteCandidate.getFileName()));
-                          } catch (IOException x) {
-                              System.out.println("Could not delete file " + deleteCandidate.getFileName());
+                                try {
+                                    Files.deleteIfExists(Paths.get(deleteCandidate.getFileName()));
+                                } catch (IOException x) {
+                                    System.out.println("Could not delete file " + deleteCandidate.getFileName());
 
-                          }
-                      }});
+                                }
+                            }
+                        });
                     }
                 });
-
 
         hboxButtons.getChildren().add(btnDelete);
         return hboxButtons;

@@ -12,11 +12,11 @@ import java.util.regex.Pattern;
 
 public class OrphanedImages {
 
-    private static final String[] TOP_LEVEL_DIRECTORIES = {"/cms", "/dari","/releases","/styleguide"};
+
 
     public static List<String> getAllImageFiles(String projectRootDirectory) {
         List<String> hugeImageList = new ArrayList<>();
-        for (String localDirectory : TOP_LEVEL_DIRECTORIES) {
+        for (String localDirectory : Utilities.TOP_LEVEL_DIRECTORIES) {
             hugeImageList.addAll(getLocalImageFiles(projectRootDirectory + localDirectory));
         }
         return hugeImageList;
@@ -60,7 +60,7 @@ A graphic file is one that ends with svg, png, jpg, or jpeg
     protected static String loadAllTextIntoSingleString(String projectRootDirectory) {
         String localString = new String();
 
-        for (String localDirectory : TOP_LEVEL_DIRECTORIES) {
+        for (String localDirectory : Utilities.TOP_LEVEL_DIRECTORIES) {
             localString = localString.concat(getLocalTextFiles(projectRootDirectory + localDirectory));
         }
      //   System.out.println(localString);
