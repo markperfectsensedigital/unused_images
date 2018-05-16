@@ -1,5 +1,6 @@
 package sample;
 
+import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -14,6 +15,8 @@ import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -28,6 +31,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class MainPane {
 
@@ -35,6 +39,7 @@ public class MainPane {
     private static ObservableList<DeleteCandidate> deleteCandidates = FXCollections.observableArrayList();
     private static SelectionStatus selectionStatus = new SelectionStatus();
     private static ImageView imagePreview = new ImageView();
+    private static Button btnCopy = new Button("Copy to clipboard");
 
     public static Pane makeMainPane(Stage primaryStage) {
         Pane root = new Pane();
@@ -132,6 +137,7 @@ This method lays out the top hbox, which has the following:
 
                             });
                             SelectionStatus.updateStatusLabel(primaryStage, selectionStatus);
+                            btnCopy.setDisable(false);
                         } else {
 
                             Utilities.updateStatusLabel(primaryStage, "The directory you selected is not a project root. Try again.");
@@ -255,7 +261,43 @@ selected file.
                     }
                 });
 
-        hboxButtons.getChildren().add(btnDelete);
+        btnCopy = new Button("Copy to clipboard");
+
+        btnCopy.setOnAction(
+                new EventHandler<ActionEvent>() {
+                    @Override
+                    public void handle(final ActionEvent e) {
+                        Clipboard clipboard = Clipboard.getSystemClipboard();
+                        ClipboardContent content = new ClipboardContent();
+
+                            String fileString = deleteCandidates
+                                    .stream()
+                                    .map(s -> s.getFileName().substring(0))
+                                    .collect(Collectors.joining("\n"));
+
+                            content.putString(fileString);
+                            clipboard.setContent(content);
+
+                    }
+                }
+        );
+
+        btnCopy.setDisable(true);
+
+        Button btnClose = new Button("Close");
+
+        btnClose.setOnAction(
+                new EventHandler<ActionEvent>() {
+                    @Override
+                    public void handle(final ActionEvent e) {
+                        Platform.exit();
+                        System.exit(0);
+
+                    }
+                }
+        );
+
+        hboxButtons.getChildren().addAll(btnDelete,btnCopy,btnClose);
         return hboxButtons;
     }
 
