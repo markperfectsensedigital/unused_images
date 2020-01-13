@@ -4,9 +4,7 @@ import javafx.scene.control.Label;
 import javafx.stage.Stage;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.nio.file.Path;
-import java.util.Arrays;
 
 public class Utilities {
 
