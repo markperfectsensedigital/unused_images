@@ -193,11 +193,11 @@ selected file.
 
                         if (newValue) { /*If turn the check box ON so that we want to delete the file */
                             selectionStatus.setNumberFilesSelected(selectionStatus.getNumberFilesSelected() + 1);
-                            selectionStatus.setSizeFilesSelected(selectionStatus.getSizeFilesSelected() + deleteCandidate.getFileSize());
+                            selectionStatus.setSizeFilesSelected(selectionStatus.getSizeFilesSelected() + deleteCandidate.getLongFileSize());
 
                         } else {/*If turn the check box OFF so that we want to retain the file */
                             selectionStatus.setNumberFilesSelected(selectionStatus.getNumberFilesSelected() - 1);
-                            selectionStatus.setSizeFilesSelected(selectionStatus.getSizeFilesSelected() - deleteCandidate.getFileSize());
+                            selectionStatus.setSizeFilesSelected(selectionStatus.getSizeFilesSelected() - deleteCandidate.getLongFileSize());
                         }
                         SelectionStatus.updateStatusLabel(primaryStage, selectionStatus);
                     }

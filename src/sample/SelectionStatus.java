@@ -52,10 +52,11 @@ public class SelectionStatus {
     static void updateStatusLabel(Stage primaryStage, SelectionStatus selectionStatus) {
         Label statusLabel = (Label) primaryStage.getScene().lookup("#statusLabel");
 
-        statusLabel.setText(String.format("Selected %d of %d files, %d of %d bytes",
+        statusLabel.setText(String.format("Selected %d of %d files, %s of %s bytes",
                 selectionStatus.getNumberFilesSelected(),
                 selectionStatus.getNumberFilesFound(),
-                selectionStatus.getSizeFilesSelected(),
-                selectionStatus.getSizeFileFound() ));
+                Utilities.formattedNumber(selectionStatus.getSizeFilesSelected()),
+                Utilities.formattedNumber(selectionStatus.getSizeFileFound())
+        ));
     }
 }
