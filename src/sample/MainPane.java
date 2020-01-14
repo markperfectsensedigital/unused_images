@@ -26,12 +26,19 @@ import javafx.util.Callback;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 
 public class MainPane {
 
@@ -96,44 +103,53 @@ This method lays out the top hbox, which has the following:
                     The following event handler occurs when clicking the start button.
                      */
                     @Override
-                    public void handle(final ActionEvent e) {
+                    public void handle(final ActionEvent event) {
                         /*
                         Retrieve the value of the selected project root.
                          */
                         TextField textField = (TextField) primaryStage.getScene().lookup("#tfProjectRoot");
-
+                        String projectRoot = textField.getText();
                         /* Check if the value in textField is a project's root directory. */
-                        if (Utilities.isRootDirectory(textField.getText())) {
+                        if (Utilities.isRootDirectory(projectRoot)) {
                             /*   Feed into a List all of the project's image files.
                              */
-                            List<String> allImagesOnDisk = OrphanedImages.getAllImageFiles(textField.getText());
-                        /*
-                        Feed into a single string all of the project's text files.
-                         */
-                            String entireDocumentationText = OrphanedImages.loadAllTextIntoSingleString(textField.getText());
-                        /*
-                        For each of the found image files in the List, use pattern matching to see if the
-                        file appears inside the large string. If not, then the image is unused and add it
-                        to the list of delete candidates.
-                         */
+                            Set<File> imageDeletionCandidates = OrphanedImages.getAllImageFiles(projectRoot);
 
-                            allImagesOnDisk.forEach((fullFileName) -> {
-                                File localImageFile = new File(fullFileName);
-                                String filename = localImageFile.getName();
-                                Pattern p = Pattern.compile(filename);
-                                Matcher m = p.matcher(entireDocumentationText);
-                                if (!m.find()) {
-                                    //    System.out.println(localImageFile.getAbsolutePath());
-                                    File localDeleteCandidate = new File(localImageFile.getAbsolutePath());
-                                    deleteCandidates.add(new DeleteCandidate(false, localImageFile.getAbsolutePath(), localDeleteCandidate.length()));
+                            Utilities.writeStuff("/tmp/imagecandidates.txt", imageDeletionCandidates);
+                        /*
+                        Retrieve all source files.
+                         */
+                            Set<File> sourceFiles = Utilities.sourceFiles(projectRoot);
+                            sourceFiles.forEach(sourceFile -> {
+                                List<String> sourceLines = Collections.emptyList();
+                                /* Get the path without the file name */
+                                String fullFilePath = FilenameUtils.getFullPath(sourceFile.getPath());
+                                try {
+                                    sourceLines = Files.readAllLines(sourceFile.toPath(), StandardCharsets.UTF_8);
+                                    System.out.println("Reading " + sourceFile.toPath().toString());
+                                    sourceLines.forEach(sourceLine -> {
+                                        Matcher matcher = Utilities.imagePattern.matcher(sourceLine);
+                                        while (matcher.find()) {
+                                            System.out.println("   found: " + fullFilePath + matcher.group(1));
 
+                                            File cannonicalFileReference = new File(fullFilePath + matcher.group(1));
+                                            boolean omg = imageDeletionCandidates.remove(cannonicalFileReference);
+                                            if (omg) {
+                                                System.out.println("Removed a file");
+                                            } else {
+                                                System.out.println("Did not remove a file");
+                                            }
+
+                                        }
+                                    });
+                                } catch (IOException e) {
+                                    e.printStackTrace();
                                 }
-
                             });
 
-                            deleteCandidates.forEach(deleteCandidate -> {
+                            imageDeletionCandidates.forEach(deleteCandidate -> {
                                 selectionStatus.setNumberFilesFound(selectionStatus.getNumberFilesFound() + 1);
-                                selectionStatus.setSizeFileFound(selectionStatus.getSizeFileFound() + deleteCandidate.getFileSize());
+                                selectionStatus.setSizeFileFound(selectionStatus.getSizeFileFound() + deleteCandidate.length());
 
                             });
                             SelectionStatus.updateStatusLabel(primaryStage, selectionStatus);
@@ -270,13 +286,13 @@ selected file.
                         Clipboard clipboard = Clipboard.getSystemClipboard();
                         ClipboardContent content = new ClipboardContent();
 
-                            String fileString = deleteCandidates
-                                    .stream()
-                                    .map(s -> s.getFileName().substring(0))
-                                    .collect(Collectors.joining("\n"));
+                        String fileString = deleteCandidates
+                                .stream()
+                                .map(s -> s.getFileName().substring(0))
+                                .collect(Collectors.joining("\n"));
 
-                            content.putString(fileString);
-                            clipboard.setContent(content);
+                        content.putString(fileString);
+                        clipboard.setContent(content);
 
                     }
                 }
@@ -297,7 +313,7 @@ selected file.
                 }
         );
 
-        hboxButtons.getChildren().addAll(btnDelete,btnCopy,btnClose);
+        hboxButtons.getChildren().addAll(btnDelete, btnCopy, btnClose);
         return hboxButtons;
     }
 
