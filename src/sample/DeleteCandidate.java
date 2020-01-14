@@ -6,6 +6,8 @@ import javafx.beans.property.SimpleLongProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ObservableList;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Map;
 
 public class DeleteCandidate {
@@ -19,6 +21,18 @@ public class DeleteCandidate {
         this.fileName = new SimpleStringProperty(fileName);
         this.fileSize = new SimpleLongProperty(fileSize);
     }
+
+    public DeleteCandidate(File file) {
+        try {
+            this.deleteFlag = new SimpleBooleanProperty(Boolean.FALSE);
+            this.fileName = new SimpleStringProperty(file.getCanonicalPath());
+            this.fileSize = new SimpleLongProperty(file.length());
+        } catch (IOException e) {
+            System.out.println("Could not create a DeleteCandidate object");
+            System.exit(-5);
+        }
+    }
+
 
     public Boolean isDeleteFlag() {
         return deleteFlag.get();

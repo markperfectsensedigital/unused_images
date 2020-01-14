@@ -8,6 +8,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.control.TableColumn.CellDataFeatures;
@@ -56,6 +57,7 @@ public class MainPane {
                 makeHboxUnusedFiles(primaryStage),
                 makeHboxDeleteFiles(),
                 makeVboxStatus());
+        vboxRoot.setPadding(new Insets(15, 12, 15, 12));
         root.getChildren().addAll(vboxRoot);
         return root;
     }
@@ -115,7 +117,6 @@ This method lays out the top hbox, which has the following:
                              */
                             Set<File> imageDeletionCandidates = OrphanedImages.getAllImageFiles(projectRoot);
 
-                            Utilities.writeStuff("/tmp/imagecandidates.txt", imageDeletionCandidates);
                         /*
                         Retrieve all source files.
                          */
@@ -126,30 +127,22 @@ This method lays out the top hbox, which has the following:
                                 String fullFilePath = FilenameUtils.getFullPath(sourceFile.getPath());
                                 try {
                                     sourceLines = Files.readAllLines(sourceFile.toPath(), StandardCharsets.UTF_8);
-                                    System.out.println("Reading " + sourceFile.toPath().toString());
                                     sourceLines.forEach(sourceLine -> {
                                         Matcher matcher = Utilities.imagePattern.matcher(sourceLine);
                                         while (matcher.find()) {
-                                            System.out.println("   found: " + fullFilePath + matcher.group(1));
-
-                                            File cannonicalFileReference = new File(fullFilePath + matcher.group(1));
-                                            boolean omg = imageDeletionCandidates.remove(cannonicalFileReference);
-                                            if (omg) {
-                                                System.out.println("Removed a file");
-                                            } else {
-                                                System.out.println("Did not remove a file");
-                                            }
-
+                                            File cannonicalFileReference = new File(fullFilePath + matcher.group(2));
+                                            imageDeletionCandidates.remove(cannonicalFileReference);
                                         }
                                     });
                                 } catch (IOException e) {
                                     e.printStackTrace();
                                 }
                             });
-
+                            TableView tableView = (TableView) primaryStage.getScene().lookup("#tableView");
                             imageDeletionCandidates.forEach(deleteCandidate -> {
                                 selectionStatus.setNumberFilesFound(selectionStatus.getNumberFilesFound() + 1);
                                 selectionStatus.setSizeFileFound(selectionStatus.getSizeFileFound() + deleteCandidate.length());
+                                tableView.getItems().add(new DeleteCandidate(deleteCandidate));
 
                             });
                             SelectionStatus.updateStatusLabel(primaryStage, selectionStatus);
@@ -180,6 +173,8 @@ selected file.
         TableColumn<DeleteCandidate, String> colFilename = new TableColumn("Filename");
         TableColumn colSize = new TableColumn("Size");
         TableView tableUnusedFiles = new TableView();
+        tableUnusedFiles.prefWidthProperty().bind(primaryStage.widthProperty().multiply(0.7f));
+        tableUnusedFiles.setId("tableView");
 
         colDelete.setCellValueFactory(new Callback<CellDataFeatures<DeleteCandidate, Boolean>, ObservableValue<Boolean>>() {
 
@@ -246,7 +241,7 @@ selected file.
         imagePreview.setFitHeight(100.0);
 
         HBox hboxUnusedFiles = new HBox();
-        hboxUnusedFiles.getChildren().addAll(tableUnusedFiles, imagePreview);
+        hboxUnusedFiles.getChildren().addAll(tableUnusedFiles,imagePreview);
 
         return hboxUnusedFiles;
     }

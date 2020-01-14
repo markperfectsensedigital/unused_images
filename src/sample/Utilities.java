@@ -21,7 +21,7 @@ public class Utilities {
     static final String[] SOURCE_FILE_EXTENSIONS = {"txt", "tsr"};
     static final String[] GRAPHIC_FILE_EXTENSION = {"svg", "png", "jpg", "jpeg"};
 
-    static final Pattern imagePattern = Pattern.compile("\\.\\.\\s+image:: ([\\w\\-./]+)");
+    static final Pattern imagePattern = Pattern.compile("\\.\\.\\s+(image|figure):: ([\\w\\-./]+)");
 
     static final boolean isRootDirectory(String directory) {
 
@@ -66,27 +66,5 @@ public class Utilities {
         statusLabel.setText(newText);
     }
 
-    static void writeStuff(String filename, Object stuff) {
-        FileWriter fileWriter = null;
-        try {
-            fileWriter = new FileWriter(filename);
-            if (stuff instanceof Set<?>) {
-                for(File myfile: (Set<File>) stuff) {
-                    fileWriter.write(myfile.getCanonicalPath() + "\n");
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (fileWriter != null) {
-                    fileWriter.flush();
-                    fileWriter.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
 
 }
