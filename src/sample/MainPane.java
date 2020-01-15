@@ -59,6 +59,7 @@ public class MainPane {
                 makeVboxStatus());
         vboxRoot.setPadding(new Insets(15, 12, 15, 12));
         root.getChildren().addAll(vboxRoot);
+        primaryStage.getIcons().add(new Image("/resources/mona.png"));
         return root;
     }
 
