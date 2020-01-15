@@ -117,10 +117,12 @@ This method lays out the top hbox, which has the following:
                              */
                             Set<File> imageDeletionCandidates = OrphanedImages.getAllImageFiles(projectRoot);
 
+
                         /*
                         Retrieve all source files.
                          */
                             Set<File> sourceFiles = Utilities.sourceFiles(projectRoot);
+
                             sourceFiles.forEach(sourceFile -> {
                                 List<String> sourceLines = Collections.emptyList();
                                 /* Get the path without the file name */
@@ -130,7 +132,8 @@ This method lays out the top hbox, which has the following:
                                     sourceLines.forEach(sourceLine -> {
                                         Matcher matcher = Utilities.imagePattern.matcher(sourceLine);
                                         while (matcher.find()) {
-                                            File cannonicalFileReference = new File(fullFilePath + matcher.group(2));
+                                            String normalizedPath = FilenameUtils.normalize(fullFilePath + matcher.group(2));
+                                            File cannonicalFileReference = new File(normalizedPath);
                                             imageDeletionCandidates.remove(cannonicalFileReference);
                                         }
                                     });

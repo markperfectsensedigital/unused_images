@@ -22,7 +22,7 @@ public class Utilities {
     static final String[] SOURCE_FILE_EXTENSIONS = {"txt", "tsr"};
     static final String[] GRAPHIC_FILE_EXTENSION = {"svg", "png", "jpg", "jpeg"};
 
-    static final Pattern imagePattern = Pattern.compile("\\.\\.\\s+(image|figure):: ([\\w\\-./]+)");
+    static final Pattern imagePattern = Pattern.compile("\\.\\.\\s+(image|figure)::\\s+([\\w\\-./]+)");
 
     static final boolean isRootDirectory(String directory) {
 
